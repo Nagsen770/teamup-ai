@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { ArrowLeft, CalendarDays, CheckCircle2, Clock, Home, MapPin, Search, Star, Ticket, UserRound, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { ArrowLeft, CalendarDays, CheckCircle2, Clock, LocateFixed, MapPin, Search, Star, Ticket, UserRound, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AuthGate } from "@/components/auth-gate";
 import { turfs } from "@/lib/data";
 
 const sports = ["All", "Football", "Cricket", "Badminton"];
@@ -19,6 +20,13 @@ const leaderboard = [
 ];
 
 type Turf = (typeof turfs)[number];
+type PlayerProfile = {
+  name: string;
+  mobile: string;
+  email: string;
+  favoriteSport: string;
+  address: string;
+};
 
 export default function PlayerTerminal() {
   const [query, setQuery] = useState("");
@@ -27,6 +35,50 @@ export default function PlayerTerminal() {
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedSlot, setSelectedSlot] = useState("");
   const [status, setStatus] = useState("No active booking.");
+  const [profile, setProfile] = useState<PlayerProfile>({
+    name: "Player",
+    mobile: "",
+    email: "",
+    favoriteSport: "",
+    address: ""
+  });
+  const [showLocationPopup, setShowLocationPopup] = useState(false);
+  const [typedLocation, setTypedLocation] = useState("");
+
+  useEffect(() => {
+    const raw = window.localStorage.getItem("teamup-demo-session");
+    if (!raw) return;
+
+    const session = JSON.parse(raw) as Partial<PlayerProfile>;
+    const nextProfile = {
+      name: session.name || "Player",
+      mobile: session.mobile || "",
+      email: session.email || "",
+      favoriteSport: session.favoriteSport || "",
+      address: session.address || ""
+    };
+    setProfile(nextProfile);
+    setTypedLocation(nextProfile.address);
+
+    if (!nextProfile.address) {
+      setShowLocationPopup(true);
+    }
+  }, []);
+
+  const saveProfile = (nextProfile: PlayerProfile) => {
+    setProfile(nextProfile);
+    const raw = window.localStorage.getItem("teamup-demo-session");
+    const session = raw ? JSON.parse(raw) : {};
+    window.localStorage.setItem("teamup-demo-session", JSON.stringify({ ...session, ...nextProfile, role: "player" }));
+  };
+
+  const saveLocation = (address: string) => {
+    const cleanAddress = address.trim();
+    if (!cleanAddress) return;
+    saveProfile({ ...profile, address: cleanAddress });
+    setTypedLocation(cleanAddress);
+    setShowLocationPopup(false);
+  };
 
   const filteredTurfs = useMemo(
     () =>
@@ -51,24 +103,31 @@ export default function PlayerTerminal() {
   };
 
   return (
-    <main className="min-h-screen bg-[#f5fbf6] pb-24 text-slate-950">
+    <AuthGate role="player">
+    <main className="min-h-screen bg-[#f5fbf6] text-slate-950">
       <section className="relative overflow-hidden rounded-b-[2rem] bg-emerald-700 px-4 pb-7 pt-4 text-white">
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.075)_1px,transparent_1px),linear-gradient(0deg,rgba(255,255,255,0.065)_1px,transparent_1px)] bg-[size:34px_34px]" />
         <div className="relative mx-auto max-w-4xl">
           <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-emerald-700 shadow-premium">
+                <UserRound className="h-7 w-7" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-emerald-100">Player Profile</p>
+                <p className="font-black">{profile.name}</p>
+              </div>
+            </div>
             <Button asChild variant="ghost" className="text-white hover:bg-white/12 hover:text-white">
               <Link href="/">
                 <ArrowLeft className="h-4 w-4" />
                 Back
               </Link>
             </Button>
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-emerald-700">
-              <UserRound className="h-5 w-5" />
-            </div>
           </div>
 
           <div className="mt-5">
-            <p className="text-sm font-semibold text-emerald-100">Hello Player</p>
+            <p className="text-sm font-semibold text-emerald-100">Hello {profile.name}</p>
             <h1 className="mt-1 text-3xl font-black tracking-normal">Find your turf</h1>
           </div>
 
@@ -145,6 +204,36 @@ export default function PlayerTerminal() {
         </div>
 
         <aside className="space-y-5 lg:sticky lg:top-5 lg:h-fit">
+          <section className="rounded-[2rem] bg-white p-5 shadow-premium">
+            <div className="flex items-center gap-3">
+              <UserRound className="h-5 w-5 text-emerald-700" />
+              <h2 className="font-black">User Profile</h2>
+            </div>
+            <div className="mt-4 space-y-3">
+              <ProfileRow label="Name" value={profile.name} />
+              <ProfileRow label="Mobile" value={profile.mobile || "Not added"} />
+              <ProfileRow label="Email" value={profile.email || "Not added"} />
+              <label className="block rounded-[1.5rem] bg-emerald-50 p-3">
+                <span className="text-xs font-black text-emerald-700">Favorite sport</span>
+                <input
+                  value={profile.favoriteSport}
+                  onChange={(event) => saveProfile({ ...profile, favoriteSport: event.target.value })}
+                  className="mt-1 w-full bg-transparent text-sm font-bold outline-none placeholder:text-slate-400"
+                  placeholder="Add favorite sport"
+                />
+              </label>
+              <label className="block rounded-[1.5rem] bg-emerald-50 p-3">
+                <span className="text-xs font-black text-emerald-700">Address</span>
+                <input
+                  value={profile.address}
+                  onChange={(event) => saveProfile({ ...profile, address: event.target.value })}
+                  className="mt-1 w-full bg-transparent text-sm font-bold outline-none placeholder:text-slate-400"
+                  placeholder="Add address"
+                />
+              </label>
+            </div>
+          </section>
+
           <section className="rounded-[2rem] bg-white p-5 shadow-premium">
             <div className="flex items-center gap-3">
               <Star className="h-5 w-5 fill-emerald-700 text-emerald-700" />
@@ -267,16 +356,63 @@ export default function PlayerTerminal() {
         </div>
       )}
 
-      <nav className="fixed bottom-4 left-1/2 z-30 flex -translate-x-1/2 gap-2 rounded-full bg-white p-2 shadow-premium">
-        {[Home, Search, Ticket].map((Icon, index) => (
-          <button
-            key={index}
-            className={`flex h-11 w-11 items-center justify-center rounded-full ${index === 0 ? "bg-emerald-700 text-white" : "text-emerald-800"}`}
-          >
-            <Icon className="h-5 w-5" />
-          </button>
-        ))}
-      </nav>
+      {showLocationPopup && (
+        <div className="fixed inset-0 z-[60] flex items-end justify-center bg-slate-950/45 px-4 pb-4 backdrop-blur-sm sm:items-center sm:pb-0">
+          <section className="w-full max-w-md rounded-[2rem] bg-white p-5 shadow-premium">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm font-bold text-emerald-700">Location</p>
+                <h2 className="mt-1 text-2xl font-black">Add your playing area</h2>
+                <p className="mt-2 text-sm text-slate-500">Use current location demo or type your address.</p>
+              </div>
+              <button
+                onClick={() => setShowLocationPopup(false)}
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 text-emerald-800"
+                aria-label="Close location popup"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <button
+              onClick={() => saveLocation("Current location - nearby sports venues")}
+              className="mt-5 flex h-12 w-full items-center justify-center gap-2 rounded-full bg-emerald-700 text-sm font-black text-white"
+            >
+              <LocateFixed className="h-4 w-4" />
+              Use Current Location
+            </button>
+
+            <label className="mt-4 block rounded-[1.5rem] border border-emerald-100 p-4">
+              <span className="text-xs font-black text-emerald-700">Type address</span>
+              <input
+                value={typedLocation}
+                onChange={(event) => setTypedLocation(event.target.value)}
+                className="mt-2 w-full bg-transparent text-sm font-bold outline-none"
+                placeholder="Enter your address"
+              />
+            </label>
+
+            <Button
+              className="mt-4 w-full bg-emerald-700 hover:bg-emerald-800 disabled:bg-slate-200 disabled:text-slate-500"
+              disabled={!typedLocation.trim()}
+              onClick={() => saveLocation(typedLocation)}
+            >
+              Save Location
+            </Button>
+          </section>
+        </div>
+      )}
+
     </main>
+    </AuthGate>
+  );
+}
+
+function ProfileRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-[1.5rem] bg-emerald-50 p-3">
+      <p className="text-xs font-black text-emerald-700">{label}</p>
+      <p className="mt-1 break-words text-sm font-bold text-slate-700">{value}</p>
+    </div>
   );
 }

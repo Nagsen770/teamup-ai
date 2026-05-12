@@ -1,12 +1,56 @@
 "use client";
 
-import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Chrome, Mail, Phone, UserRound } from "lucide-react";
 
+type DemoRole = "player" | "owner";
+
+const roleLabels: Record<DemoRole, string> = {
+  player: "Player",
+  owner: "Turf Owner"
+};
+
 export default function ChoosePage() {
-  const continueDemo = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    window.location.href = "/player";
+  const searchParams = useSearchParams();
+  const roleFromUrl = searchParams.get("role");
+  const [role, setRole] = useState<DemoRole | "">("");
+  const [name, setName] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (roleFromUrl === "player" || roleFromUrl === "owner") {
+      setRole(roleFromUrl);
+    }
+  }, [roleFromUrl]);
+
+  const destination = role === "owner" ? "/owner" : "/player";
+  const canContinue = Boolean(role && name.trim() && /^[0-9]{10}$/.test(mobile.trim()) && /\S+@\S+\.\S+/.test(email.trim()));
+
+  const saveSession = (method: "google" | "credentials") => {
+    if (!role) {
+      setError("Select Player or Turf Owner first.");
+      return;
+    }
+
+    if (method === "credentials" && !canContinue) {
+      setError("Fill name, 10 digit mobile number, and valid email.");
+      return;
+    }
+
+    window.localStorage.setItem(
+      "teamup-demo-session",
+      JSON.stringify({
+        role,
+        name: name || "Google User",
+        mobile,
+        email: email || "google.user@teamup.ai",
+        method
+      })
+    );
+    window.location.href = destination;
   };
 
   return (
@@ -29,7 +73,7 @@ export default function ChoosePage() {
               Book. Play. Connect.
             </p>
             <p className="mt-4 max-w-md text-base leading-7 text-slate-500">
-              Choose your role and enter the sports booking workspace.
+              Select a role, then sign in to enter the workspace.
             </p>
           </div>
         </div>
@@ -37,24 +81,35 @@ export default function ChoosePage() {
         <div className="flex items-center justify-center px-4 py-10 sm:px-8 lg:py-0">
           <div className="w-full max-w-md">
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Link
-                href="/player"
-                className="flex h-14 w-44 items-center justify-center rounded-full border border-white bg-white text-base font-black text-emerald-800 shadow-premium transition hover:-translate-y-1 hover:shadow-glow"
-              >
-                Player
-              </Link>
-              <Link
-                href="/owner"
-                className="flex h-14 w-44 items-center justify-center rounded-full border border-white bg-white text-base font-black text-emerald-800 shadow-premium transition hover:-translate-y-1 hover:shadow-glow"
-              >
-                Turf Owner
-              </Link>
+              {(["player", "owner"] as DemoRole[]).map((item) => (
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => {
+                    setRole(item);
+                    setError("");
+                  }}
+                  className={`flex h-14 w-44 items-center justify-center rounded-full border text-base font-black shadow-premium transition hover:-translate-y-1 ${
+                    role === item
+                      ? "border-emerald-200 bg-emerald-950 text-white"
+                      : "border-white bg-white text-emerald-800"
+                  }`}
+                >
+                  {roleLabels[item]}
+                </button>
+              ))}
             </div>
 
-            <form onSubmit={continueDemo} className="mt-6 rounded-[2rem] bg-white p-5 shadow-premium sm:p-6">
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                saveSession("credentials");
+              }}
+              className="mt-6 rounded-[2rem] bg-white p-5 shadow-premium sm:p-6"
+            >
               <button
                 type="button"
-                onClick={() => (window.location.href = "/player")}
+                onClick={() => saveSession("google")}
                 className="flex h-12 w-full items-center justify-center gap-3 rounded-full border border-emerald-100 bg-emerald-50 text-sm font-black text-emerald-800 transition hover:bg-emerald-100"
               >
                 <Chrome className="h-4 w-4" />
@@ -65,24 +120,27 @@ export default function ChoosePage() {
 
               <label className="flex items-center gap-3 rounded-full border border-emerald-100 bg-white px-4 py-3">
                 <UserRound className="h-4 w-4 text-emerald-700" />
-                <input className="w-full bg-transparent text-sm outline-none" placeholder="Name" />
+                <input value={name} onChange={(event) => setName(event.target.value)} className="w-full bg-transparent text-sm outline-none" placeholder="Name" />
               </label>
 
               <label className="mt-3 flex items-center gap-3 rounded-full border border-emerald-100 bg-white px-4 py-3">
                 <Phone className="h-4 w-4 text-emerald-700" />
-                <input className="w-full bg-transparent text-sm outline-none" placeholder="Mobile number" />
+                <input value={mobile} onChange={(event) => setMobile(event.target.value)} className="w-full bg-transparent text-sm outline-none" placeholder="Mobile number" />
               </label>
 
               <label className="mt-3 flex items-center gap-3 rounded-full border border-emerald-100 bg-white px-4 py-3">
                 <Mail className="h-4 w-4 text-emerald-700" />
-                <input className="w-full bg-transparent text-sm outline-none" placeholder="Email address" />
+                <input value={email} onChange={(event) => setEmail(event.target.value)} className="w-full bg-transparent text-sm outline-none" placeholder="Email address" />
               </label>
+
+              {error && <p className="mt-3 rounded-full bg-red-50 px-4 py-2 text-xs font-bold text-red-600">{error}</p>}
 
               <button
                 type="submit"
-                className="mt-5 flex h-12 w-full items-center justify-center rounded-full bg-emerald-700 text-sm font-black text-white transition hover:bg-emerald-800"
+                disabled={!canContinue}
+                className="mt-5 flex h-12 w-full items-center justify-center rounded-full bg-emerald-700 text-sm font-black text-white transition hover:bg-emerald-800 disabled:bg-slate-200 disabled:text-slate-500"
               >
-                Continue
+                Continue as {role ? roleLabels[role] : "selected role"}
               </button>
             </form>
           </div>

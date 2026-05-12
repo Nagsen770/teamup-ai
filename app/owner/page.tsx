@@ -15,6 +15,7 @@ import {
   UsersRound
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AuthGate } from "@/components/auth-gate";
 
 const initialRequests = [
   { player: "Aarav + 9 players", slot: "Today 7:30 PM", amount: "Rs 1,800", status: "Pending" },
@@ -39,6 +40,7 @@ export default function OwnerTerminal() {
   };
 
   return (
+    <AuthGate role="owner">
     <main className="min-h-screen">
       <header className="border-b bg-background/75 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -181,6 +183,7 @@ export default function OwnerTerminal() {
         </div>
       </section>
     </main>
+    </AuthGate>
   );
 }
 
