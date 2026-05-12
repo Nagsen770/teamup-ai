@@ -1,0 +1,293 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  PLAYER
+  TURF_OWNER
+  ADMIN
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum PaymentStatus {
+  CREATED
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum TournamentFormat {
+  KNOCKOUT
+  ROUND_ROBIN
+  HYBRID
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String?
+  phone         String?   @unique
+  role          Role      @default(PLAYER)
+  skillRating   Int       @default(1200)
+  city          String?
+  latitude      Float?
+  longitude     Float?
+  preferences   Json?
+  accounts      Account[]
+  sessions      Session[]
+  ownedTurfs    Turf[]
+  bookings      Booking[]
+  teams         TeamMember[]
+  messages      ChatMessage[]
+  notifications Notification[]
+  aiLogs        AiLog[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([role])
+  @@index([city])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Turf {
+  id          String    @id @default(cuid())
+  ownerId     String
+  owner       User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  name        String
+  description String
+  address     String
+  city        String
+  sport       String
+  pricePerHr  Int
+  rating      Float     @default(0)
+  latitude    Float
+  longitude   Float
+  amenities   String[]
+  images      String[]
+  verified    Boolean   @default(false)
+  slots       Slot[]
+  bookings    Booking[]
+  analytics   AnalyticsEvent[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([city, sport])
+  @@index([verified])
+}
+
+model Slot {
+  id        String    @id @default(cuid())
+  turfId    String
+  turf      Turf      @relation(fields: [turfId], references: [id], onDelete: Cascade)
+  startsAt  DateTime
+  endsAt    DateTime
+  price     Int
+  available Boolean   @default(true)
+  booking   Booking?
+
+  @@unique([turfId, startsAt])
+  @@index([available])
+}
+
+model Booking {
+  id          String        @id @default(cuid())
+  userId      String
+  turfId      String
+  slotId      String        @unique
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  turf        Turf          @relation(fields: [turfId], references: [id], onDelete: Cascade)
+  slot        Slot          @relation(fields: [slotId], references: [id], onDelete: Cascade)
+  status      BookingStatus @default(PENDING)
+  qrCode      String?
+  amount      Int
+  payment     Payment?
+  match       Match?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([userId, status])
+  @@index([turfId, createdAt])
+}
+
+model Payment {
+  id              String        @id @default(cuid())
+  bookingId       String        @unique
+  booking         Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  provider        String        @default("razorpay")
+  providerOrderId String?
+  providerPaymentId String?
+  amount          Int
+  currency        String        @default("INR")
+  status          PaymentStatus @default(CREATED)
+  createdAt       DateTime      @default(now())
+
+  @@index([status])
+}
+
+model Team {
+  id           String       @id @default(cuid())
+  name         String
+  sport        String
+  city         String
+  members      TeamMember[]
+  tournaments  TournamentTeam[]
+  createdAt    DateTime     @default(now())
+
+  @@index([sport, city])
+}
+
+model TeamMember {
+  id       String @id @default(cuid())
+  teamId   String
+  userId   String
+  role     String @default("member")
+  team     Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+}
+
+model Match {
+  id          String    @id @default(cuid())
+  bookingId   String?   @unique
+  booking     Booking?  @relation(fields: [bookingId], references: [id])
+  sport       String
+  title       String
+  startsAt    DateTime
+  maxPlayers  Int
+  skillBand   String
+  summary     String?
+  createdAt   DateTime  @default(now())
+
+  @@index([sport, startsAt])
+}
+
+model Tournament {
+  id          String           @id @default(cuid())
+  title       String
+  sport       String
+  city        String
+  format      TournamentFormat
+  startsAt    DateTime
+  rules       Json
+  fixtures    Json
+  teams       TournamentTeam[]
+  createdAt   DateTime         @default(now())
+
+  @@index([sport, city, startsAt])
+}
+
+model TournamentTeam {
+  id           String     @id @default(cuid())
+  tournamentId String
+  teamId       String
+  seed         Int?
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  team         Team       @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([tournamentId, teamId])
+}
+
+model ChatThread {
+  id        String        @id @default(cuid())
+  title     String
+  messages  ChatMessage[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+model ChatMessage {
+  id        String     @id @default(cuid())
+  threadId  String
+  userId    String?
+  role      String
+  content   String     @db.Text
+  thread    ChatThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  user      User?      @relation(fields: [userId], references: [id])
+  createdAt DateTime   @default(now())
+
+  @@index([threadId, createdAt])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  body      String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, read])
+}
+
+model AnalyticsEvent {
+  id        String   @id @default(cuid())
+  turfId    String?
+  turf      Turf?    @relation(fields: [turfId], references: [id])
+  name      String
+  payload   Json
+  createdAt DateTime @default(now())
+
+  @@index([name, createdAt])
+}
+
+model AiLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  feature   String
+  prompt    String   @db.Text
+  response  String?  @db.Text
+  tokens    Int?
+  createdAt DateTime @default(now())
+
+  @@index([feature, createdAt])
+}

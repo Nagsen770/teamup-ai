@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 172 28% 97%;
+  --foreground: 222 47% 8%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 8%;
+  --muted: 170 22% 92%;
+  --muted-foreground: 215 16% 40%;
+  --accent: 178 74% 93%;
+  --accent-foreground: 184 88% 17%;
+  --primary: 172 78% 34%;
+  --primary-foreground: 0 0% 100%;
+  --border: 183 20% 84%;
+  --input: 183 20% 84%;
+  --ring: 172 78% 34%;
+}
+
+.dark {
+  --background: 222 47% 6%;
+  --foreground: 180 20% 96%;
+  --card: 222 38% 10%;
+  --card-foreground: 180 20% 96%;
+  --muted: 219 26% 16%;
+  --muted-foreground: 214 16% 70%;
+  --accent: 203 48% 18%;
+  --accent-foreground: 180 20% 96%;
+  --primary: 170 84% 42%;
+  --primary-foreground: 222 47% 6%;
+  --border: 218 24% 20%;
+  --input: 218 24% 20%;
+  --ring: 170 84% 42%;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background:
+    radial-gradient(circle at 15% 10%, rgba(20, 184, 166, 0.18), transparent 28rem),
+    radial-gradient(circle at 85% 12%, rgba(250, 204, 21, 0.12), transparent 24rem),
+    radial-gradient(circle at 55% 90%, rgba(14, 165, 233, 0.13), transparent 30rem),
+    hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+.glass {
+  background: color-mix(in srgb, hsl(var(--card)) 80%, transparent);
+  border: 1px solid color-mix(in srgb, hsl(var(--border)) 78%, transparent);
+  box-shadow: 0 20px 70px rgba(15, 23, 42, 0.1);
+  backdrop-filter: blur(22px);
+}
+
+.mesh {
+  background:
+    linear-gradient(135deg, rgba(20, 184, 166, 0.22), rgba(14, 165, 233, 0.16), rgba(250, 204, 21, 0.12)),
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.8), transparent 28rem);
+}
+
+.dark .mesh {
+  background:
+    linear-gradient(135deg, rgba(20, 184, 166, 0.16), rgba(14, 165, 233, 0.12), rgba(250, 204, 21, 0.08)),
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.08), transparent 28rem);
+}
+
+.premium-border {
+  position: relative;
+}
+
+.premium-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(20, 184, 166, 0.75), rgba(14, 165, 233, 0.35), rgba(250, 204, 21, 0.48));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.field-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.28) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.28) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255, 255, 255, 0.42) 1px, transparent 1px);
+  background-size: 42px 42px, 42px 42px, 18px 18px;
+}
