@@ -81,6 +81,61 @@ const venues: Venue[] = [
     reviews: "2 reviews",
     amenities: ["Parking", "Water", "Lighting"],
     slots: ["9:30", "14:30", "18:30", "22:00"]
+  },
+  {
+    name: "Elite Box Turf",
+    address: "18 Premier Sports Hub, City",
+    rating: 4.7,
+    price: 850,
+    sport: "Football",
+    image: "https://images.unsplash.com/photo-1526232761682-d26e03ac148e?auto=format&fit=crop&w=900&q=80",
+    reviews: "6 reviews",
+    amenities: ["Parking", "Floodlights", "Cafe"],
+    slots: ["06:30", "08:30", "16:30", "18:30", "20:30"]
+  },
+  {
+    name: "Prime Kick Arena",
+    address: "42 Matchday Street, City",
+    rating: 4.4,
+    price: 750,
+    sport: "Football",
+    image: "https://images.unsplash.com/photo-1459865264687-595d652de67e?auto=format&fit=crop&w=900&q=80",
+    reviews: "3 reviews",
+    amenities: ["Changing room", "Water", "Lighting"],
+    slots: ["07:00", "11:00", "15:00", "19:00", "21:00"]
+  },
+  {
+    name: "Night League Turf",
+    address: "64 Arena Circle, City",
+    rating: 4.9,
+    price: 1100,
+    sport: "Football",
+    image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=900&q=80",
+    reviews: "12 reviews",
+    amenities: ["Premium lights", "Referee", "Cafe"],
+    slots: ["18:00", "19:30", "21:00", "22:30"]
+  },
+  {
+    name: "Pitch One Sports",
+    address: "7 Club Turf Road, City",
+    rating: 4.3,
+    price: 700,
+    sport: "Cricket",
+    image: "https://images.unsplash.com/photo-1593766827228-8737b4534aa6?auto=format&fit=crop&w=900&q=80",
+    reviews: "5 reviews",
+    amenities: ["Practice nets", "Parking", "Seating"],
+    slots: ["06:00", "10:00", "14:00", "18:00", "20:00"]
+  },
+  {
+    name: "Urban 5s Turf",
+    address: "91 City Sports Park, City",
+    rating: 4.6,
+    price: 950,
+    sport: "Football",
+    image: "https://images.unsplash.com/photo-1529900748604-07564a03e7a6?auto=format&fit=crop&w=900&q=80",
+    reviews: "9 reviews",
+    amenities: ["5-a-side", "Locker", "Lighting"],
+    slots: ["08:00", "12:00", "17:00", "19:00", "21:00"]
   }
 ];
 
@@ -198,7 +253,15 @@ export default function PlayerTerminal() {
   );
 }
 
-function HomeView({ profile, onDiscover, onSelectVenue }: { profile: PlayerProfile; onDiscover: () => void; onSelectVenue: (venue: Venue) => void }) {
+function HomeView({
+  profile,
+  onDiscover,
+  onSelectVenue
+}: {
+  profile: PlayerProfile;
+  onDiscover: () => void;
+  onSelectVenue: (venue: Venue) => void;
+}) {
   return (
     <>
       <section className="bg-gradient-to-r from-emerald-800 to-teal-500 px-5 py-7 text-white">
@@ -212,17 +275,17 @@ function HomeView({ profile, onDiscover, onSelectVenue }: { profile: PlayerProfi
         </div>
       </section>
 
-      <section className="mx-auto max-w-3xl space-y-8 px-5 py-6">
+      <section className="mx-auto max-w-3xl space-y-7 px-5 py-6">
         <div className="grid grid-cols-2 gap-4">
-          <div className="rounded-[2rem] bg-white p-5 shadow-premium">
+          <div className="rounded-[1.7rem] bg-white p-4 shadow-premium">
             <p className="text-xs font-black uppercase text-slate-400">Quick tip</p>
-            <h2 className="mt-2 text-xl font-black">Pick a slot before peak hours fill up.</h2>
+            <h2 className="mt-2 text-lg font-black">Pick a slot before peak hours fill up.</h2>
           </div>
-          <button onClick={onDiscover} className="rounded-[2rem] border border-emerald-100 bg-emerald-50 p-5 text-left shadow-premium">
+          <button onClick={onDiscover} className="rounded-[1.7rem] border border-emerald-100 bg-emerald-50 p-4 text-left shadow-premium">
             <p className="text-xs font-black uppercase text-emerald-800">Discover</p>
             <div className="mt-3 flex items-center justify-between">
-              <h2 className="text-xl font-black text-emerald-900">Browse directory</h2>
-              <ChevronRight className="h-7 w-7 text-emerald-700" />
+              <h2 className="text-lg font-black text-emerald-900">Browse directory</h2>
+              <ChevronRight className="h-6 w-6 text-emerald-700" />
             </div>
           </button>
         </div>
@@ -233,7 +296,7 @@ function HomeView({ profile, onDiscover, onSelectVenue }: { profile: PlayerProfi
             <span className="rounded-full bg-white px-4 py-2 text-sm font-bold text-emerald-700 shadow-sm">Live</span>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            {venues.slice(0, 2).map((venue) => (
+            {venues.slice(0, 4).map((venue) => (
               <VenueCard key={venue.name} venue={venue} compact onClick={() => onSelectVenue(venue)} />
             ))}
           </div>
@@ -252,7 +315,17 @@ function HomeView({ profile, onDiscover, onSelectVenue }: { profile: PlayerProfi
   );
 }
 
-function DiscoverView({ query, setQuery, venues, onSelectVenue }: { query: string; setQuery: (value: string) => void; venues: Venue[]; onSelectVenue: (venue: Venue) => void }) {
+function DiscoverView({
+  query,
+  setQuery,
+  venues,
+  onSelectVenue
+}: {
+  query: string;
+  setQuery: (value: string) => void;
+  venues: Venue[];
+  onSelectVenue: (venue: Venue) => void;
+}) {
   return (
     <>
       <section className="bg-gradient-to-r from-emerald-800 to-teal-500 px-5 pb-8 pt-9 text-white">
@@ -265,9 +338,9 @@ function DiscoverView({ query, setQuery, venues, onSelectVenue }: { query: strin
           </label>
         </div>
       </section>
-      <section className="mx-auto grid max-w-3xl gap-5 px-5 py-7">
+      <section className="mx-auto grid max-w-3xl gap-4 px-5 py-7 sm:grid-cols-2">
         {venues.map((venue) => (
-          <VenueCard key={venue.name} venue={venue} onClick={() => onSelectVenue(venue)} />
+          <VenueCard key={venue.name} venue={venue} compact onClick={() => onSelectVenue(venue)} />
         ))}
       </section>
     </>
@@ -493,22 +566,25 @@ function VenueDetail({
 
 function VenueCard({ venue, onClick, compact = false }: { venue: Venue; onClick: () => void; compact?: boolean }) {
   return (
-    <button onClick={onClick} className="w-full overflow-hidden rounded-[2rem] bg-white text-left shadow-premium">
-      <div className={`relative ${compact ? "h-44" : "h-64"}`}>
+    <button onClick={onClick} className="w-full overflow-hidden rounded-[1.65rem] bg-white text-left shadow-premium transition hover:-translate-y-0.5 hover:shadow-lg">
+      <div className={`relative ${compact ? "h-36 sm:h-40" : "h-56"}`}>
         <Image src={venue.image} alt={venue.name} fill className="object-cover" sizes="(min-width: 768px) 720px, 100vw" />
-        <span className="absolute bottom-4 right-4 flex items-center gap-1 rounded-full bg-amber-400 px-4 py-2 text-lg font-black text-white">
+        <span className="absolute bottom-3 right-3 flex items-center gap-1 rounded-full bg-amber-400 px-3 py-1.5 text-sm font-black text-white">
           {venue.rating}
-          <Star className="h-5 w-5 fill-current" />
+          <Star className="h-4 w-4 fill-current" />
         </span>
       </div>
-      <div className="p-5">
-        <h2 className="text-2xl font-black">{venue.name}</h2>
-        <p className="mt-2 flex items-center gap-2 text-lg text-slate-500">
-          <MapPin className="h-5 w-5 text-slate-400" />
+      <div className="p-4">
+        <div className="flex items-start justify-between gap-3">
+          <h2 className="text-lg font-black leading-tight">{venue.name}</h2>
+          <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-black text-emerald-700">{venue.sport}</span>
+        </div>
+        <p className="mt-2 flex items-center gap-2 text-sm text-slate-500">
+          <MapPin className="h-4 w-4 shrink-0 text-slate-400" />
           {venue.address}
         </p>
-        <p className="mt-2 text-slate-400">{venue.reviews}</p>
-        <p className={`${compact ? "mt-2 text-lg" : "mt-4 text-2xl"} font-black text-teal-700`}>Rs {venue.price}/hour</p>
+        <p className="mt-1 text-xs text-slate-400">{venue.reviews}</p>
+        <p className={`${compact ? "mt-2 text-base" : "mt-3 text-xl"} font-black text-teal-700`}>Rs {venue.price}/hour</p>
       </div>
     </button>
   );
@@ -583,3 +659,4 @@ function LocationPopup({
     </div>
   );
 }
+
