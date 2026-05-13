@@ -2,14 +2,12 @@
 
 import Link from "next/link";
 import { useTheme } from "next-themes";
-import { Menu, Moon, Search, Sun, Trophy, UserRound } from "lucide-react";
+import { LogOut, Menu, Moon, Search, Sun, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppStore } from "@/lib/store";
 
 const nav = [
-  { href: "/player", label: "Player" },
-  { href: "/owner", label: "Owner" },
-  { href: "/discover", label: "Discover" },
+  { href: "/owner", label: "Turf Owner" },
   { href: "/dashboard", label: "Dashboard" },
   { href: "/tournaments", label: "Tournaments" },
   { href: "/admin", label: "Admin" }
@@ -52,11 +50,15 @@ export function Navigation() {
             <Sun className="h-4 w-4 dark:hidden" />
             <Moon className="hidden h-4 w-4 dark:block" />
           </Button>
-          <Button asChild className="hidden sm:inline-flex">
-            <Link href="/login">
-              <UserRound className="h-4 w-4" />
-              Sign in
-            </Link>
+          <Button
+            className="hidden sm:inline-flex"
+            onClick={() => {
+              window.localStorage.removeItem("teamup-demo-session");
+              window.location.href = "/choose";
+            }}
+          >
+            <LogOut className="h-4 w-4" />
+            Log out
           </Button>
           <Button variant="outline" size="icon" className="md:hidden" aria-label="Open menu">
             <Menu className="h-4 w-4" />

@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useState } from "react";
 import {
-  ArrowLeft,
   BadgeIndianRupee,
   Bot,
   CalendarDays,
@@ -44,12 +43,7 @@ export default function OwnerTerminal() {
     <main className="min-h-screen">
       <header className="border-b bg-background/75 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Button asChild variant="ghost">
-            <Link href="/">
-              <ArrowLeft className="h-4 w-4" />
-              Change role
-            </Link>
-          </Button>
+          <div className="w-24" />
           <div className="flex items-center gap-2 font-black">
             <ShieldCheck className="h-5 w-5 text-primary" />
             Turf Owner Terminal
